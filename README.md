@@ -1,4 +1,4 @@
-# @procyoncreative/plugin-updater
+# @procyon-creative/plugin-updater
 
 A CLI tool and library to update WordPress plugin versions for YahnisElsts/plugin-update-checker.
 

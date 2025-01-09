@@ -1,7 +1,11 @@
 {
-    "name": "@procyoncreative/plugin-updater",
+    "name": "@procyon-creative/plugin-updater",
     "version": "1.0.0",
     "description": "A CLI tool and library to update WordPress plugin versions for YahnisElsts/plugin-update-checker",
+    "repository": {
+      "type": "git",
+      "url": "git+git@github.com:nicolasgalvez/procyon-version-updater.git"
+      },
     "bin": {
       "plugin-updater": "./bin/cli.js"
     },
