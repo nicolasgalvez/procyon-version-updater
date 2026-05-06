@@ -13,11 +13,20 @@ describe('CLI', function () {
 
 	it('should display help if no arguments are passed', function (done) {
 		exec(`node ${cliPath}`, (error, stdout, stderr) => {
-			expect(stderr).to.include(
-				'Usage: plugin-updater <slug> [--version=<number>] [--message=<string>]'
-			);
+			expect(stderr).to.include('Usage: plugin-updater <slug>');
+			expect(stderr).to.include('--type=plugin|theme');
 			done();
 		});
+	});
+
+	it('should reject an invalid --type value', function (done) {
+		exec(
+			`node ${cliPath} some-slug --type=widget`,
+			(error, stdout, stderr) => {
+				expect(stderr).to.include('--type must be "plugin" or "theme"');
+				done();
+			}
+		);
 	});
 
 	before(function () {
@@ -59,6 +68,52 @@ describe('CLI', function () {
 			expect(updatedReadme).to.include(
 				`== Changelog ==\n\n= ${newVersion} =\n* Test release\n\n`
 			);
+			done();
+		});
+	});
+});
+
+describe('CLI (theme)', function () {
+	const basePath = path.join(__dirname, 'test-theme');
+	const stylePath = path.join(basePath, 'style.css');
+	const changelogPath = path.join(basePath, 'CHANGELOG.md');
+	const cliPath = path.join(__dirname, '../bin/cli.js');
+
+	before(function () {
+		if (!fs.existsSync(basePath)) {
+			fs.mkdirSync(basePath);
+		}
+		fs.writeFileSync(
+			stylePath,
+			'/*\nTheme Name: Test Theme\nVersion: 1.0.0\n*/\n'
+		);
+		fs.writeFileSync(
+			changelogPath,
+			'# Changelog\n\n## 1.0.0 - 2025-01-01\n\n- Initial release\n'
+		);
+	});
+
+	after(function () {
+		fs.unlinkSync(stylePath);
+		fs.unlinkSync(changelogPath);
+		fs.rmdirSync(basePath);
+	});
+
+	it('should update style.css and CHANGELOG.md via CLI auto-detection', function (done) {
+		const newVersion = '1.1.0';
+		const command = `node ${cliPath} test-theme --version=${newVersion} --message="Theme release"`;
+
+		exec(command, { cwd: basePath }, (error) => {
+			if (error) {
+				return done(error);
+			}
+
+			const updatedStyle = fs.readFileSync(stylePath, 'utf-8');
+			const updatedChangelog = fs.readFileSync(changelogPath, 'utf-8');
+
+			expect(updatedStyle).to.include(`Version: ${newVersion}`);
+			expect(updatedChangelog).to.include(`## ${newVersion}`);
+			expect(updatedChangelog).to.include('Theme release');
 			done();
 		});
 	});
